@@ -1,3 +1,8 @@
+.vscode
+!data/example.json
+ref
+
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

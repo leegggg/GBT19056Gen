@@ -29,5 +29,9 @@ func main() {
 
 	fmt.Printf("0x%02x %s", record.SpeedStatusLog.Code, record.SpeedStatusLog.Name)
 	fmt.Println(record.RealTime.Now)
+
+	var bs []byte
+	bs, err = record.DumpDate()
+	print(bs)
 	return
 }

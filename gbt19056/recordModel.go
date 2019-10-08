@@ -1,6 +1,7 @@
 package gbt19056
 
 import (
+	"encoding/binary"
 	"strconv"
 	"strings"
 	"time"
@@ -88,11 +89,14 @@ type dataBlockMeta struct {
 	Name string   `json:"name"`
 }
 
-// StandardVersion ...
-type StandardVersion struct {
-	dataBlockMeta
-	Year   uint8 `json:"year"`
-	Update uint8 `json:"update"`
+// DumpDate ...
+func (e *dataBlockMeta) DumpDate() ([]byte, error) {
+	bs := make([]byte, 19)
+	bs[0] = (byte)(e.Code)
+	sub := bs[1:]
+	name, _ := EncodeGBK(([]byte)(e.Name))
+	copy(sub, name)
+	return bs, nil
 }
 
 // DriverInfo ..
@@ -199,6 +203,7 @@ type SpeedStatusLog struct {
 
 // ExportRecord ...
 type ExportRecord struct {
+	NumberBlock        uint16             `json:"number_block"`
 	StandardVersion    StandardVersion    `json:"standard_version"`
 	DriverInfo         DriverInfo         `json:"driver_info"`
 	RealTime           RealTime           `json:"real_time"`
@@ -215,6 +220,15 @@ type ExportRecord struct {
 	ExternalPowerLog   ExternalPowerLog   `json:"external_power_log"`
 	ConfigChangeLog    ConfigChangeLog    `json:"config_change_log"`
 	SpeedStatusLog     SpeedStatusLog     `json:"speed_status_log"`
+}
+
+// DumpDate ...
+func (e *ExportRecord) DumpDate() ([]byte, error) {
+	bs := make([]byte, 2)
+	binary.BigEndian.PutUint16(bs, e.NumberBlock)
+	standardVersionDump, _ := e.StandardVersion.DumpDate()
+	bs = append(bs, standardVersionDump...)
+	return bs, nil
 }
 
 // UnmarshalJSON HexUint8 ...
@@ -242,6 +256,12 @@ func (sd *HexUint8) UnmarshalJSON(input []byte) error {
 // 		return err
 // 	}
 // 	// s = SpeedStatusLog(*aux)
+// 	// s.SomeCustomType = time.Unix(aux.SomeCustomType, 0)
+// 	return nil
+// }
+// 	return nil
+// }
+// }
 // 	// s.SomeCustomType = time.Unix(aux.SomeCustomType, 0)
 // 	return nil
 // }

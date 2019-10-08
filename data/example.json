@@ -1,9 +1,10 @@
 {
+    "number_block":16,
     "standard_version": {
         "code":"0x00",
         "name":"执行标准版本年号",
         "year":12,
-        "update":0
+        "update":"0x01"
     },
     "driver_info":{
         "code":"0x01",

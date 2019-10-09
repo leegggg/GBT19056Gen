@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -31,7 +32,17 @@ func main() {
 	fmt.Println(record.RealTime.Now)
 
 	var bs []byte
-	bs, err = record.DumpDate()
+	bs, err = record.DumpData()
 	print(bs)
+
+	var nbWrite int
+	f, err := os.Create("data/example.dat")
+	defer f.Close()
+
+	writer := bufio.NewWriter(f)
+	nbWrite, err = writer.Write(bs)
+	fmt.Printf("wrote %d bytes\n", nbWrite)
+	writer.Flush()
+
 	return
 }

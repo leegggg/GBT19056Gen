@@ -13,9 +13,10 @@ type StandardVersion struct {
 
 // DumpData StandardVersion
 func (e *StandardVersion) DumpData() ([]byte, error) {
+	var err error
 	bs := make([]byte, 2)
 	bs[0] = bcd.FromUint8(e.Year)
 	bs[1] = (byte)(e.Update)
-	bs, _ = e.linkDumpedData(bs)
-	return bs, nil
+	bs, err = e.linkDumpedData(bs)
+	return bs, err
 }

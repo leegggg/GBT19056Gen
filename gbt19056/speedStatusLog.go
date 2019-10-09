@@ -1,5 +1,7 @@
 package gbt19056
 
+import "fmt"
+
 // SpeedStatusLog ..
 type SpeedStatusLog struct {
 	dataBlockMeta
@@ -8,10 +10,67 @@ type SpeedStatusLog struct {
 
 // SpeedStatusLogRecord ...
 type SpeedStatusLogRecord struct {
-	Status HexUint8 `json:"status"` // 0x01: normal; 0x02: error;
-	Start  DateTime `json:"start,string"`
-	End    DateTime `json:"end,string"`
-	Speeds []uint8  `json:"speeds"`
+	Status     HexUint8 `json:"status"` // 0x01: normal; 0x02: error;
+	Start      DateTime `json:"start,string"`
+	End        DateTime `json:"end,string"`
+	Speeds     []uint8  `json:"speeds"`
+	SpeedsGNSS []uint8  `json:"speeds_gnss"`
+}
+
+// DumpData SpeedStatusLog
+func (e *SpeedStatusLog) DumpData() ([]byte, error) {
+	var err error
+	var record []byte
+
+	buff := []byte{}
+
+	for _, v := range e.Records {
+		record, err = v.DumpData()
+		buff = append(buff, record...)
+	}
+
+	buff, err = e.linkDumpedData(buff)
+	return buff, err
+}
+
+// DumpData SpeedStatusLogRecord
+func (e *SpeedStatusLogRecord) DumpData() ([]byte, error) {
+	var err error
+
+	var start, end []byte
+
+	buff := []uint8{uint8(e.Status)}
+
+	start, err = e.Start.DumpData()
+	buff = append(buff, start...)
+
+	end, err = e.End.DumpData()
+	buff = append(buff, end...)
+
+	// Table A.32, Should have 60 points(sec) in the block, if there are not enough copy last one
+	var lastSpeed, lastSpeedGNSS uint8
+	lastSpeed = 0x00
+	lastSpeedGNSS = 0x00
+	for i := 0; i < 60; i++ {
+		if i < len(e.Speeds) {
+			lastSpeed = e.Speeds[i]
+		}
+		if i < len(e.SpeedsGNSS) {
+			lastSpeed = e.SpeedsGNSS[i]
+		}
+		buff = append(buff, lastSpeed)
+		buff = append(buff, lastSpeedGNSS)
+	}
+
+	// Table A.17, Full the block with 0xFF if length is not 126
+	lengthBlock := 133
+	if len(buff) != lengthBlock {
+		err = error(fmt.Errorf("buffer size of SpeedLogRecord is not %d Table A.33", lengthBlock))
+		for i := len(buff); i < lengthBlock; i++ {
+			buff = append(buff, 0xFF)
+		}
+	}
+	return buff, err
 }
 
 // UnmarshalJSON ...

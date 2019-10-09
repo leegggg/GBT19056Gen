@@ -25,9 +25,53 @@ type ExportRecord struct {
 
 // DumpData ExportRecord
 func (e *ExportRecord) DumpData() ([]byte, error) {
+	var buff []byte
+	var err error
+
 	bs := make([]byte, 2)
 	binary.BigEndian.PutUint16(bs, e.NumberBlock)
-	standardVersionDump, _ := e.StandardVersion.DumpData()
-	bs = append(bs, standardVersionDump...)
-	return bs, nil
+
+	buff, err = e.StandardVersion.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.DriverInfo.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.RealTime.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.Odometer.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.PulseFactor.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.VehicleInfo.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.StatusSignalConfig.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.RecoderID.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.SpeedLog.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.PositionLog.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.AccidentLog.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.OvertimeLog.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.DriverLog.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.ExternalPowerLog.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.ConfigChangeLog.DumpData()
+	bs = append(bs, buff...)
+	buff, err = e.SpeedStatusLog.DumpData()
+	bs = append(bs, buff...)
+
+	var checkSum uint8
+	checkSum = 0x00
+
+	for _, v := range bs {
+		checkSum ^= v
+	}
+
+	bs = append(bs, checkSum)
+
+	return bs, err
 }

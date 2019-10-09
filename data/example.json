@@ -42,7 +42,10 @@
         "name":"状态信号配置信息",
         "now":"2006-01-02T13:04:05Z",
         "status":[true,false,true,false,true,false,true,false],
-        "config":["制动","左转向","右转向","远光","远光","车灯","手刹","ACC"]
+        "config":[
+            ["ACC","手刹","车灯","近光","远光","右转向","左转向","制动"],
+            ["制动","左转向","右转向","远光","近光","车灯","手刹","ACC"]
+        ]
     },
     "recoder_id":{
         "code":"0x07",
@@ -68,7 +71,7 @@
                         "speed":100,
                         "status":[true,false,true,false,true,false,true,false]
                     },{
-                        "speed":0,
+                        "speed":60,
                         "status":[true,false,true,false,true,false,true,false]
                     }
                 ]
@@ -83,7 +86,7 @@
                         "speed":100,
                         "status":[true,false,true,false,true,false,true,false]
                     },{
-                        "speed":0,
+                        "speed":77,
                         "status":[true,false,true,false,true,false,true,false]
                     }
                 ]
@@ -159,6 +162,7 @@
         "records":[
             {
                 "ts":"2006-01-02T13:04:05Z",
+                "driver_id":"32040219930221251X",
                 "position":{
                     "latitude":31.5799788,
                     "longitude":120.2210302,
@@ -184,6 +188,7 @@
         "name":"超时驾驶记录",
         "records":[
             {
+                "driver_id":"32040219930221251X",
                 "start":"2006-01-01T12:00:00Z",
                 "end":"2006-01-02T12:00:00Z",
                 "position_start":{
@@ -205,12 +210,12 @@
         "records":[
             {
                 "ts":"2006-01-02T13:04:05Z",
-                "id":"32040219930221251X",
+                "driver_id":"32040219930221251X",
                 "type":"0x01"
             },
             {
                 "ts":"2006-01-02T13:05:05Z",
-                "id":"32040219930221251X",
+                "driver_id":"32040219930221251X",
                 "type":"0x02"
             }
         ]
@@ -252,13 +257,15 @@
                 "status":"0x01",
                 "start":"2006-01-01T12:00:00Z",
                 "end":"2006-01-01T13:00:00Z",
-                "speeds":[100]
+                "speeds":[100],
+                "speeds_gnss":[100]
             },
             {
                 "status":"0x02",
                 "start":"2006-01-02T12:00:00Z",
                 "end":"2006-01-02T13:00:00Z",
-                "speeds":[0]
+                "speeds":[0],
+                "speeds_gnss":[100]
             }
         ]
     }

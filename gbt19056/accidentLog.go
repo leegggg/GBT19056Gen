@@ -32,6 +32,20 @@ func (e *AccidentLog) DumpData() ([]byte, error) {
 	return buff, err
 }
 
+// LengthAccidentRecord ...
+const LengthAccidentRecord = 234
+
+// LoadBinary SpeedLog Table A.16, Code 0x08
+func (e *AccidentLog) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	for ptr := 0; ptr < len(buffer); ptr = ptr + LengthAccidentRecord {
+		record := new(AccidentLogRecord)
+		record.LoadBinary(buffer[ptr : ptr+LengthAccidentRecord])
+		e.Records = append(e.Records, *record)
+	}
+	return
+}
+
 // DumpData SpeedLogRecord
 func (e *AccidentLogRecord) DumpData() ([]byte, error) {
 	var err error
@@ -63,7 +77,7 @@ func (e *AccidentLogRecord) DumpData() ([]byte, error) {
 	buff = append(buff, position...)
 
 	// Table A.22, Full the block with 0xFF if length is not 234
-	blockLength := 234
+	blockLength := LengthAccidentRecord
 	if len(buff) != blockLength {
 		err = error(fmt.Errorf("buffer size of SpeedLogRecord is not %d, Table A.22", blockLength))
 		for i := len(buff); i < blockLength; i++ {
@@ -71,4 +85,17 @@ func (e *AccidentLogRecord) DumpData() ([]byte, error) {
 		}
 	}
 	return buff, err
+}
+
+// LoadBinary SpeedLogRecord Table A.17
+func (e *AccidentLogRecord) LoadBinary(buffer []byte) {
+	e.Ts.LoadBinary(buffer[0:6])
+	e.DriverID = bytesToStr(buffer[6:24])
+	for ptr := 24; ptr < len(buffer); ptr = ptr + LengthSpeedStatus {
+		speed := new(SpeedStatus)
+		speed.LoadBinary(buffer[ptr : ptr+LengthSpeedStatus])
+		e.SpeedStatuses = append(e.SpeedStatuses, *speed)
+	}
+	e.EndPosition.LoadBinary(buffer[224:234])
+	return
 }

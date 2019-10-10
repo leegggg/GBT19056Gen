@@ -20,3 +20,11 @@ func (e *StandardVersion) DumpData() ([]byte, error) {
 	bs, err = e.linkDumpedData(bs)
 	return bs, err
 }
+
+// LoadBinary StandardVersion Table A.6, Code 0x00
+func (e *StandardVersion) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	e.Year = bcd.ToUint8(buffer[0])
+	e.Update = HexUint8(buffer[1])
+	return
+}

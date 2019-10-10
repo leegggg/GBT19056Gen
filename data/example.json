@@ -21,8 +21,8 @@
         "name":"累计行驶里程",
         "now":"2006-01-02T13:04:05Z",
         "time_init":"2006-01-02T13:04:05Z",
-        "mileage_total":200100,
-        "mileage_init":200000
+        "mileage_total":200100.2,
+        "mileage_init":200000.3
     },
     "pulse_factor":{
         "code":"0x04",
@@ -41,7 +41,6 @@
         "code":"0x06",
         "name":"状态信号配置信息",
         "now":"2006-01-02T13:04:05Z",
-        "status":[true,false,true,false,true,false,true,false],
         "config":[
             ["ACC","手刹","车灯","近光","远光","右转向","左转向","制动"],
             ["制动","左转向","右转向","远光","近光","车灯","手刹","ACC"]
@@ -66,7 +65,7 @@
                 "speed_statuses":[
                     {
                         "speed":220,
-                        "status":[true,false,true,false,true,false,true,false]
+                        "status":[true,true,true,false,true,false,true,true]
                     },{
                         "speed":100,
                         "status":[true,false,true,false,true,false,true,false]
@@ -264,7 +263,7 @@
                 "status":"0x02",
                 "start":"2006-01-02T12:00:00Z",
                 "end":"2006-01-02T13:00:00Z",
-                "speeds":[0],
+                "speeds":[90],
                 "speeds_gnss":[100]
             }
         ]

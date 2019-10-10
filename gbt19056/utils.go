@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/encoding/traditionalchinese"
@@ -20,6 +21,49 @@ func DecodeGBK(s []byte) ([]byte, error) {
 		return nil, e
 	}
 	return d, nil
+}
+
+// DecodeGBKStr convert GBK to UTF-8 String
+func DecodeGBKStr(s []byte) (string, error) {
+	if len(s) == 0 {
+		return "", nil
+	}
+	length := len(s)
+	// removing tailing zeros
+	for i := length - 1; i >= 0; i-- {
+		if s[i] != 0x00 {
+			length = i + 1
+			break
+		}
+		if i == 0 {
+			return "", nil
+		}
+	}
+	d, e := DecodeGBK(s[:length])
+	if e != nil {
+		return "", e
+	}
+
+	str := strings.TrimSpace(string(d))
+	return str, nil
+}
+
+func bytesToStr(s []byte) string {
+	if len(s) == 0 {
+		return ""
+	}
+	length := len(s)
+	// removing tailing zeros
+	for i := length - 1; i >= 0; i-- {
+		if s[i] != 0x00 {
+			length = i + 1
+			break
+		}
+		if i == 0 {
+			return ""
+		}
+	}
+	return string(s[:length])
 }
 
 // EncodeGBK convert UTF-8 to GBK
@@ -102,4 +146,18 @@ func int16ToBytes(v int16) []byte {
 		fmt.Println("binary.Write failed:", err)
 	}
 	return buf.Bytes()
+}
+
+func bytesToInt32(b []byte) int32 {
+	buf := bytes.NewBuffer(b)
+	var x int32
+	binary.Read(buf, binary.BigEndian, &x)
+	return x
+}
+
+func bytesToInt16(b []byte) int16 {
+	buf := bytes.NewBuffer(b)
+	var x int16
+	binary.Read(buf, binary.BigEndian, &x)
+	return x
 }

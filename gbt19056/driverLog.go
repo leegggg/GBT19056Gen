@@ -45,3 +45,25 @@ func (e *DriverLogRecord) DumpData() ([]byte, error) {
 
 	return buff, err
 }
+
+// LengthDriverLogRecord ...
+const LengthDriverLogRecord = 25
+
+// LoadBinary SpeedLog Table A.16, Code 0x12
+func (e *DriverLog) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	for ptr := 0; ptr < len(buffer); ptr = ptr + LengthDriverLogRecord {
+		record := new(DriverLogRecord)
+		record.LoadBinary(buffer[ptr : ptr+LengthDriverLogRecord])
+		e.Records = append(e.Records, *record)
+	}
+	return
+}
+
+// LoadBinary DriverLogRecord Table A.25
+func (e *DriverLogRecord) LoadBinary(buffer []byte) {
+	e.Ts.LoadBinary(buffer[0:6])
+	e.DriverID = bytesToStr(buffer[6:24])
+	e.Type = HexUint8(buffer[24])
+	return
+}

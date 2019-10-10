@@ -39,3 +39,22 @@ func (e *ConfigChangeLogRecord) DumpData() ([]byte, error) {
 
 	return buff, err
 }
+
+// LoadBinary SpeedLog Table A.16, Code 0x08
+func (e *ConfigChangeLog) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	dataLength := 7
+	e.dataBlockMeta = meta
+	for ptr := 0; ptr < len(buffer); ptr = ptr + dataLength {
+		record := new(ConfigChangeLogRecord)
+		record.LoadBinary(buffer[ptr : ptr+dataLength])
+		e.Records = append(e.Records, *record)
+	}
+	return
+}
+
+// LoadBinary DriverLogRecord Table A.25
+func (e *ConfigChangeLogRecord) LoadBinary(buffer []byte) {
+	e.Ts.LoadBinary(buffer[0:6])
+	e.Type = HexUint8(buffer[6])
+	return
+}

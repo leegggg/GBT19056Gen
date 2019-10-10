@@ -1,6 +1,9 @@
 package gbt19056
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 // ExportRecord ...
 type ExportRecord struct {
@@ -74,4 +77,61 @@ func (e *ExportRecord) DumpData() ([]byte, error) {
 	bs = append(bs, checkSum)
 
 	return bs, err
+}
+
+// LoadBinary ExportRecord
+func (e *ExportRecord) LoadBinary(buffer []byte) {
+	var offset int
+	var err error
+	var data []byte
+	ptr := 0
+	e.NumberBlock = binary.BigEndian.Uint16(buffer[ptr : ptr+2])
+	ptr += 2
+	for indexBlock := uint16(0); indexBlock < e.NumberBlock; indexBlock++ {
+		meta := new(dataBlockMeta)
+		offset, err = meta.LoadBinary(buffer[ptr:])
+		data = buffer[ptr+LengthMetadata : ptr+offset]
+		switch code := meta.Code; code {
+		case HexUint8(0x00):
+			e.StandardVersion.LoadBinary(data, *meta)
+		case HexUint8(0x01):
+			e.DriverInfo.LoadBinary(data, *meta)
+		case HexUint8(0x02):
+			e.RealTime.LoadBinary(data, *meta)
+		case HexUint8(0x03):
+			e.Odometer.LoadBinary(data, *meta)
+		case HexUint8(0x04):
+			e.PulseFactor.LoadBinary(data, *meta)
+		case HexUint8(0x05):
+			e.VehicleInfo.LoadBinary(data, *meta)
+		case HexUint8(0x06):
+			e.StatusSignalConfig.LoadBinary(data, *meta)
+		case HexUint8(0x07):
+			e.RecoderID.LoadBinary(data, *meta)
+		case HexUint8(0x08):
+			e.SpeedLog.LoadBinary(data, *meta)
+		case HexUint8(0x09):
+			e.PositionLog.LoadBinary(data, *meta)
+		case HexUint8(0x10):
+			e.AccidentLog.LoadBinary(data, *meta)
+		case HexUint8(0x11):
+			e.OvertimeLog.LoadBinary(data, *meta)
+		case HexUint8(0x12):
+			e.DriverLog.LoadBinary(data, *meta)
+		case HexUint8(0x13):
+			e.ExternalPowerLog.LoadBinary(data, *meta)
+		case HexUint8(0x14):
+			e.ConfigChangeLog.LoadBinary(data, *meta)
+		case HexUint8(0x15):
+			e.SpeedStatusLog.LoadBinary(data, *meta)
+		default:
+			// freebsd, openbsd,
+			// plan9, windows...
+			fmt.Printf("%d.\n", code)
+		}
+		ptr += offset
+	}
+	if err != nil {
+
+	}
 }

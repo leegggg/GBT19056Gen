@@ -1,10 +1,12 @@
 package gbt19056
 
+// LengthStatusName ...
+const LengthStatusName = 10
+
 // StatusSignalConfig ..
 type StatusSignalConfig struct {
 	dataBlockMeta
 	Now    DateTime   `json:"now,string"`
-	Status Status     `json:"status"`
 	Config [][]string `json:"config"`
 }
 
@@ -32,4 +34,21 @@ func (e *StatusSignalConfig) DumpData() ([]byte, error) {
 
 	bs, err = e.linkDumpedData(bs)
 	return bs, err
+}
+
+// LoadBinary StatusSignalConfig Table A.12, Code 0x06
+func (e *StatusSignalConfig) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	e.Now.LoadBinary(buffer[0:6])
+	nbStatus := int(buffer[6])
+	ptr := 7
+	for i := 0; i < nbStatus; i++ {
+		names := make([]string, 8)
+		for j := 0; j < 8; j++ {
+			names[j], _ = DecodeGBKStr(buffer[ptr : ptr+LengthStatusName])
+			ptr += LengthStatusName
+		}
+		e.Config = append(e.Config, names)
+	}
+	return
 }

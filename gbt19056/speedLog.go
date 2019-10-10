@@ -2,6 +2,9 @@ package gbt19056
 
 import "fmt"
 
+// LengthSpeedLogRecord ...
+const LengthSpeedLogRecord = 126
+
 // SpeedLog ..
 type SpeedLog struct {
 	dataBlockMeta
@@ -30,6 +33,17 @@ func (e *SpeedLog) DumpData() ([]byte, error) {
 	return buff, err
 }
 
+// LoadBinary SpeedLog Table A.16, Code 0x08
+func (e *SpeedLog) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	for ptr := 0; ptr < len(buffer); ptr = ptr + LengthSpeedLogRecord {
+		record := new(SpeedLogRecord)
+		record.LoadBinary(buffer[ptr : ptr+LengthSpeedLogRecord])
+		e.Records = append(e.Records, *record)
+	}
+	return
+}
+
 // DumpData SpeedLogRecord
 func (e *SpeedLogRecord) DumpData() ([]byte, error) {
 	var err error
@@ -56,4 +70,15 @@ func (e *SpeedLogRecord) DumpData() ([]byte, error) {
 		}
 	}
 	return buff, err
+}
+
+// LoadBinary SpeedLogRecord Table A.17
+func (e *SpeedLogRecord) LoadBinary(buffer []byte) {
+	e.Start.LoadBinary(buffer[0:6])
+	for ptr := 6; ptr < len(buffer); ptr = ptr + LengthSpeedStatus {
+		speed := new(SpeedStatus)
+		speed.LoadBinary(buffer[ptr : ptr+LengthSpeedStatus])
+		e.SpeedStatuses = append(e.SpeedStatuses, *speed)
+	}
+	return
 }

@@ -11,12 +11,18 @@ import (
 	"github.com/leegggg/GBT19056Gen/utils/bcd"
 )
 
+// LengthMetadata ...
+const LengthMetadata = 23
+
+// PositionMultiplier ...
+const PositionMultiplier = 10000.0 * 60
+
 // HexUint8 ...
 type HexUint8 uint8
 
 // UnmarshalJSON HexUint8 ...
 func (sd *HexUint8) UnmarshalJSON(input []byte) error {
-	strInput := string(input)
+	strInput := bytesToStr(input)
 	strInput = strings.Trim(strInput, `"`)
 	res, err := strconv.ParseUint(strInput, 0, 8)
 	if err != nil {
@@ -25,6 +31,16 @@ func (sd *HexUint8) UnmarshalJSON(input []byte) error {
 
 	*sd = HexUint8(res)
 	return nil
+}
+
+// MarshalJSON HexUint8
+func (sd *HexUint8) MarshalJSON() ([]byte, error) {
+	//do your serializing here
+	stamp := "\"0x00\""
+	if uint8(*sd) != 0x00 {
+		stamp = fmt.Sprintf("\"0x%02x\"", uint8(*sd))
+	}
+	return []byte(stamp), nil
 }
 
 // DateTime ...
@@ -59,6 +75,28 @@ func (e *DateTime) DumpData() ([]byte, error) {
 	nb = uint8(e.Second())
 	bs[5] = bcd.FromUint8(nb)
 	return bs, nil
+}
+
+// LoadBinary RealTime Table A.8, Code 0x02
+func (e *DateTime) LoadBinary(buffer []byte) {
+	year := bcd.ToUint8(buffer[0])
+	month := bcd.ToUint8(buffer[1])
+	day := bcd.ToUint8(buffer[2])
+	hour := bcd.ToUint8(buffer[3])
+	min := bcd.ToUint8(buffer[4])
+	sec := bcd.ToUint8(buffer[5])
+	e.Time = time.Date(
+		int(year)+2000, time.Month(int(month)), int(day), int(hour), int(min), int(sec), 0, time.UTC)
+}
+
+// LoadBinaryShort RealTime Table A.14
+func (e *DateTime) LoadBinaryShort(buffer []byte) {
+	year := bcd.ToUint8(buffer[0])
+	month := bcd.ToUint8(buffer[1])
+	day := bcd.ToUint8(buffer[2])
+
+	e.Time = time.Date(
+		int(year)+2000, time.Month(int(month)), int(day), 0, 0, 0, 0, time.UTC)
 }
 
 // DumpDataShort DateTime
@@ -101,11 +139,25 @@ func (e *Status) DumpData() (byte, error) {
 	return bs, nil
 }
 
+// LoadBinary Status Table A.8, Code 0x02
+func (e *Status) LoadBinary(buffer byte) {
+	for i := 0; i < 8; i++ {
+		if (buffer & (1 << i)) == 0 {
+			e[i] = false
+		} else {
+			e[i] = true
+		}
+	}
+}
+
 // SpeedStatus ...
 type SpeedStatus struct {
 	Speed  uint8  `json:"speed"`
 	Status Status `json:"status"`
 }
+
+// LengthSpeedStatus ...
+const LengthSpeedStatus = 2
 
 // DumpData SpeedStatus
 func (e *SpeedStatus) DumpData() ([]byte, error) {
@@ -116,6 +168,12 @@ func (e *SpeedStatus) DumpData() ([]byte, error) {
 	return bs, nil
 }
 
+// LoadBinary SpeedStatus
+func (e *SpeedStatus) LoadBinary(buffer []byte) {
+	e.Speed = buffer[0]
+	e.Status.LoadBinary(buffer[1])
+}
+
 // Position ...
 type Position struct {
 	Latitude  float64 `json:"latitude"`
@@ -123,18 +181,30 @@ type Position struct {
 	Elevation float64 `json:"elevation"`
 }
 
+// LengthPosition ...
+const LengthPosition = 10
+
 // DumpData Position
 func (e *Position) DumpData() ([]byte, error) {
 	bs := make([]byte, 10)
-	positionMultiplier := 10000.0
-	latitude := int32(math.Round(e.Latitude * positionMultiplier))
-	longitude := int32(math.Round(e.Longitude * positionMultiplier))
+
+	longitude := int32(math.Round(e.Latitude * PositionMultiplier))
+	latitude := int32(math.Round(e.Longitude * PositionMultiplier))
 	elevation := int16(e.Elevation)
 
 	copy(bs[0:4], int32ToBytes(latitude))
 	copy(bs[4:8], int32ToBytes(longitude))
 	copy(bs[8:], int16ToBytes(elevation))
 	return bs, nil
+}
+
+// LoadBinary ...
+func (e *Position) LoadBinary(buffer []byte) {
+	// Table A.20
+	e.Longitude = float64(bytesToInt32(buffer[0:4])) / PositionMultiplier
+	e.Latitude = float64(bytesToInt32(buffer[4:8])) / PositionMultiplier
+	e.Elevation = float64(bytesToInt16(buffer[8:10]))
+	return
 }
 
 // dataBlockMeta ...
@@ -151,6 +221,19 @@ func (e *dataBlockMeta) DumpData() ([]byte, error) {
 	name, _ := EncodeGBK(([]byte)(e.Name))
 	copy(sub, name)
 	return bs, nil
+}
+
+// DumpDate ...
+func (e *dataBlockMeta) LoadBinary(buffer []byte) (int, error) {
+	// Table B.2
+	var err error
+	var name string
+	dataLength := LengthMetadata
+	e.Code = HexUint8(buffer[0])
+	name, err = DecodeGBKStr(buffer[1:19])
+	e.Name = name
+	dataLength += int(binary.BigEndian.Uint32(buffer[19:23]))
+	return dataLength, err
 }
 
 // linkDumpedData

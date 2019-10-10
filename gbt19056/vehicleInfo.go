@@ -32,3 +32,12 @@ func (e *VehicleInfo) DumpData() ([]byte, error) {
 	bs, err = e.linkDumpedData(bs)
 	return bs, err
 }
+
+// LoadBinary PulseFactor Table A.11, Code 0x05
+func (e *VehicleInfo) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	e.ID = bytesToStr(buffer[0:17])
+	e.Plate, _ = DecodeGBKStr(buffer[17:29])
+	e.PlateType, _ = DecodeGBKStr(buffer[29:41])
+	return
+}

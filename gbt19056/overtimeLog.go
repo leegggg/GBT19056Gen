@@ -52,3 +52,28 @@ func (e *OvertimeLogRecord) DumpData() ([]byte, error) {
 
 	return buff, err
 }
+
+// LengthOvertimeLogRecord ...
+const LengthOvertimeLogRecord = 50
+
+// LoadBinary SpeedLog Table A.16, Code 0x08
+func (e *OvertimeLog) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	dataLength := LengthOvertimeLogRecord
+	e.dataBlockMeta = meta
+	for ptr := 0; ptr < len(buffer); ptr = ptr + dataLength {
+		record := new(OvertimeLogRecord)
+		record.LoadBinary(buffer[ptr : ptr+dataLength])
+		e.Records = append(e.Records, *record)
+	}
+	return
+}
+
+// LoadBinary DriverLogRecord Table A.25
+func (e *OvertimeLogRecord) LoadBinary(buffer []byte) {
+	e.DriverID = bytesToStr(buffer[0:18])
+	e.Start.LoadBinary(buffer[18:24])
+	e.End.LoadBinary(buffer[24:30])
+	e.PositionStart.LoadBinary(buffer[30:40])
+	e.PositionEnd.LoadBinary(buffer[40:50])
+	return
+}

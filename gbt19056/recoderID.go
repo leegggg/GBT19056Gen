@@ -42,3 +42,14 @@ func (e *RecoderID) DumpData() ([]byte, error) {
 	bs, err = e.linkDumpedData(bs)
 	return bs, err
 }
+
+// LoadBinary RecoderID Table A.11, Code 0x08
+func (e *RecoderID) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	e.CCC = bytesToStr(buffer[0:7])
+	e.Version = bytesToStr(buffer[7:23])
+	e.Dop.LoadBinaryShort(buffer[23:26])
+	e.Sn = binary.BigEndian.Uint32(buffer[26:30])
+	e.Comment = bytesToStr(buffer[30:35])
+	return
+}

@@ -1,6 +1,8 @@
 package gbt19056
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+)
 
 // PulseFactor ..
 type PulseFactor struct {
@@ -20,4 +22,12 @@ func (e *PulseFactor) DumpData() ([]byte, error) {
 
 	bs, err = e.linkDumpedData(bs)
 	return bs, err
+}
+
+// LoadBinary PulseFactor Table A.10, Code 0x04
+func (e *PulseFactor) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	e.Now.LoadBinary(buffer[0:6])
+	e.Factor = binary.BigEndian.Uint16(buffer[6:8])
+	return
 }

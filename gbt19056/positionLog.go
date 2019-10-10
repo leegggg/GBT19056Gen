@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+// LengthPositionLogRecord ...
+const LengthPositionLogRecord = 666
+
 // PositionLog ..
 type PositionLog struct {
 	dataBlockMeta
@@ -37,6 +40,17 @@ func (e *PositionLog) DumpData() ([]byte, error) {
 	return buff, err
 }
 
+// LoadBinary SpeedLog Table A.16, Code 0x08
+func (e *PositionLog) LoadBinary(buffer []byte, meta dataBlockMeta) {
+	e.dataBlockMeta = meta
+	for ptr := 0; ptr < len(buffer); ptr = ptr + LengthPositionLogRecord {
+		record := new(PositionLogRecord)
+		record.LoadBinary(buffer[ptr : ptr+LengthPositionLogRecord])
+		e.Records = append(e.Records, *record)
+	}
+	return
+}
+
 // DumpData SpeedLogRecord
 func (e *PositionLogRecord) DumpData() ([]byte, error) {
 	var err error
@@ -55,8 +69,8 @@ func (e *PositionLogRecord) DumpData() ([]byte, error) {
 		buff = append(buff, last...)
 	}
 
-	// Table A.19, Full the block with 0xFF if length is not 126
-	blockLength := 666
+	// Table A.19, Full the block with 0xFF if length is not LengthPositionLogRecord
+	blockLength := LengthPositionLogRecord
 	if len(buff) != blockLength {
 		err = error(fmt.Errorf("buffer size of SpeedLogRecord is not %d", blockLength))
 		for i := len(buff); i < blockLength; i++ {
@@ -64,6 +78,18 @@ func (e *PositionLogRecord) DumpData() ([]byte, error) {
 		}
 	}
 	return buff, err
+}
+
+// LoadBinary SpeedLogRecord Table A.17
+func (e *PositionLogRecord) LoadBinary(buffer []byte) {
+	lengthPositionWithSpeed := 11
+	e.Start.LoadBinary(buffer[0:6])
+	for ptr := 6; ptr < len(buffer); ptr = ptr + lengthPositionWithSpeed {
+		point := new(positionWithSpeed)
+		point.LoadBinary(buffer[ptr : ptr+lengthPositionWithSpeed])
+		e.Positions = append(e.Positions, *point)
+	}
+	return
 }
 
 // dumpData positionWithSpeed
@@ -76,4 +102,11 @@ func (e *positionWithSpeed) dumpData() ([]byte, error) {
 
 	buff = append(position, e.Speed)
 	return buff, err
+}
+
+// LoadBinary SpeedLogRecord Table A.17
+func (e *positionWithSpeed) LoadBinary(buffer []byte) {
+	e.Speed = buffer[10]
+	e.Position.LoadBinary(buffer[0:10])
+	return
 }

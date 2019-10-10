@@ -1,5 +1,6 @@
-.vscode
-!data/example.json
+/.vscode
+/data
+!/data/example.json
 ref
 
 

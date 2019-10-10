@@ -80,7 +80,7 @@ func (e *ExportRecord) DumpData() ([]byte, error) {
 }
 
 // LoadBinary ExportRecord
-func (e *ExportRecord) LoadBinary(buffer []byte) {
+func (e *ExportRecord) LoadBinary(buffer []byte) error {
 	var offset int
 	var err error
 	var data []byte
@@ -131,7 +131,11 @@ func (e *ExportRecord) LoadBinary(buffer []byte) {
 		}
 		ptr += offset
 	}
-	if err != nil {
+	return err
+}
 
-	}
+// MakeFileName ...
+func (e *ExportRecord) MakeFileName() string {
+	ts := e.RealTime.Now.Format("060102_1504")
+	return fmt.Sprintf("D%s_%s", ts, e.VehicleInfo.Plate)
 }

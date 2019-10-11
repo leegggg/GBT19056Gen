@@ -140,11 +140,11 @@ func main() {
 	}
 	fmt.Println("Read Record Done")
 
-	// Out put file
+	// Output file
 	outputPath := exportRecord.MakeFileName()
-	var outputFile *os.File
+
 	if *hasTsPtr {
-		outputPath = fmt.Sprintf("%s.%s", outputPath, time.Now().Format("2006-01-02T15:04:05"))
+		outputPath = fmt.Sprintf("%s.%s", outputPath, time.Now().Format("2006-01-02T150405"))
 	}
 	if filepath.Ext(inputPath) == ".json" {
 		var bs []byte
@@ -155,22 +155,36 @@ func main() {
 		} else {
 			outputPath = fmt.Sprintf("%s%s", outputPath, ".VDR")
 		}
+		// outputPath, err = filepath.Abs(outputPath)
 		var nbWrite int
-		outputFile, err = os.Create(outputPath)
-		defer outputFile.Close()
+		nbWrite = len(bs)
+		//var outputFile *os.File
+		// outputFile, err = os.Create(outputPath)
+		// defer outputFile.Close()
 
-		writer := bufio.NewWriter(outputFile)
-		nbWrite, err = writer.Write(bs)
-		fmt.Printf("wrote %d bytes to binary %s\n", nbWrite, outputPath)
-		writer.Flush()
+		// writer := bufio.NewWriter(outputFile)
+		// nbWrite, err = writer.Write(bs)
+		// err = writer.Flush()
+		err = ioutil.WriteFile(outputPath, bs, 0644)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(-1)
+		}
+		fmt.Printf("Wrote %d bytes to binary %s\n", nbWrite, outputPath)
+
 	} else {
 		if len(output) > 0 {
 			outputPath = output
 		} else {
 			outputPath = fmt.Sprintf("%s%s", outputPath, ".json")
 		}
+		// outputPath, err = filepath.Abs(outputPath)
 		exportRecordJSON, _ := json.MarshalIndent(exportRecord, "", "    ")
 		err = ioutil.WriteFile(outputPath, exportRecordJSON, 0644)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(-1)
+		}
 		fmt.Printf("Wrote JSON to  %s\n", outputPath)
 	}
 }

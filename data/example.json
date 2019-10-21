@@ -53,7 +53,7 @@
         "version":"0123456789abcdef",
         "dop":"2006-01-02T00:00:00Z",
         "sn":25336548,
-        "comment":"0x0000000000"
+        "comment":"EwkE8AA="
     },
     "speed_log":{
         "-":"speed part should have 60 items(by sec), copy last if not enough",

@@ -9,7 +9,7 @@ type RecoderID struct {
 	Version string   `json:"version"`
 	Dop     DateTime `json:"dop,string"`
 	Sn      uint32   `json:"sn"`
-	Comment string   `json:"comment"`
+	Comment []uint8  `json:"comment"`
 }
 
 // DumpData RecoderID
@@ -50,6 +50,7 @@ func (e *RecoderID) LoadBinary(buffer []byte, meta dataBlockMeta) {
 	e.Version = bytesToStr(buffer[7:23])
 	e.Dop.LoadBinaryShort(buffer[23:26])
 	e.Sn = binary.BigEndian.Uint32(buffer[26:30])
-	e.Comment = bytesToStr(buffer[30:35])
+	// e.Comment = bytesToStr(buffer[30:35])
+	e.Comment = buffer[30:35]
 	return
 }

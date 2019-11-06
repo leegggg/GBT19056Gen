@@ -16,3 +16,5 @@ ref
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+__debug_bin
+go.sum

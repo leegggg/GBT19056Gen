@@ -85,6 +85,12 @@ func binaryToJSON() {
 }
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Fprintf(os.Stderr, "Panic with %s, pls check input file or read help message.", err)
+			os.Exit(-1)
+		}
+	}()
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "%s [-o output] [-ts] <input>\n", os.Args[0])
@@ -92,10 +98,16 @@ func main() {
 		flag.PrintDefaults()
 	}
 	hasTsPtr := flag.Bool("ts", false, "add a timestamp in the output file name(optional)")
+	useUI := flag.Bool("i", false, "add a timestamp in the output file name(optional)")
 	var output string
 	flag.StringVar(&output, "o", "", "output file path(optional)")
 
 	flag.Parse()
+	if *useUI {
+		transUI()
+		return
+	}
+
 	other := flag.Args()
 
 	if len(other) <= 0 {

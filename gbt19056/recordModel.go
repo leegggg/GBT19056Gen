@@ -186,11 +186,35 @@ const LengthPosition = 10
 
 // DumpData Position
 func (e *Position) DumpData() ([]byte, error) {
+	var longitude, latitude int32
+	var elevation int16
+
 	bs := make([]byte, 10)
 
-	longitude := int32(math.Round(e.Latitude * PositionMultiplier))
-	latitude := int32(math.Round(e.Longitude * PositionMultiplier))
-	elevation := int16(e.Elevation)
+	if e.Latitude == 0 && e.Longitude == 0 && e.Elevation == 0 {
+		longitude = 0x7FFFFFFF
+		latitude = 0x7FFFFFFF
+		elevation = 0x7FFF
+	} else {
+		if math.Abs(e.Latitude) > 90 {
+			latitude = 0x7FFFFFFF
+		} else {
+			latitude = int32(math.Round(e.Longitude * PositionMultiplier))
+		}
+
+		if math.Abs(e.Longitude) > 180 {
+			longitude = 0x7FFFFFFF
+		} else {
+			longitude = int32(math.Round(e.Latitude * PositionMultiplier))
+		}
+
+		if math.Abs(e.Elevation) > 10000 {
+			elevation = 0x7FFF
+		} else {
+			elevation = int16(e.Elevation)
+		}
+
+	}
 
 	copy(bs[0:4], int32ToBytes(latitude))
 	copy(bs[4:8], int32ToBytes(longitude))

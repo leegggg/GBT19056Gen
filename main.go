@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -129,6 +131,20 @@ func main() {
 	fmt.Println(fmt.Sprintf("Successfully Opened %s\n", inputPath))
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer inFile.Close()
+
+	var bom [3]byte
+	_, err = io.ReadFull(inFile, bom[:])
+	if err != nil {
+		log.Fatal(err)
+	}
+	if bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf {
+		fmt.Println("Warning: Json file with BOM detechted we can handle it but this is not recommended for json.")
+	} else {
+		_, err = inFile.Seek(0, 0) // Not a BOM -- seek back to the beginning
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	buff, _ := ioutil.ReadAll(inFile)
 

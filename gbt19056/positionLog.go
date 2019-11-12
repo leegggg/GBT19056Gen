@@ -100,6 +100,10 @@ func (e *positionWithSpeed) dumpData() ([]byte, error) {
 	var position []byte
 	position, err = e.Position.DumpData()
 
+	if e.Position.Latitude == 0 && e.Position.Longitude == 0 && e.Position.Elevation == 0 {
+		e.Speed = 0xFF
+	}
+
 	buff = append(position, e.Speed)
 	return buff, err
 }
